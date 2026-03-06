@@ -307,7 +307,13 @@ function Home() {
                                             className={`recent-item ${idx === activeIndex ? 'active' : ''}`}
                                             role="option"
                                             aria-selected={idx === activeIndex}
-                                            onMouseDown={() => { setSearchQuery(r); performSearch(r, 1); setIsInputFocused(false) }}
+                                            onMouseDown={() => {
+                                                performSearch(r, 1)
+                                                setSearchQuery("")
+                                                setSuggestions([])
+                                                setIsInputFocused(false)
+                                                inputRef.current?.blur()
+                                            }}
                                             onMouseEnter={() => setActiveIndex(idx)}
                                         >
                                             <span className="recent-icon">↩</span> {r}
