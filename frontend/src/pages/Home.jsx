@@ -20,13 +20,13 @@ function Home() {
     const [activeIndex, setActiveIndex] = useState(-1)
     const inputRef = useRef(null)
     const wrapperRef = useRef(null)
+    const userFocusedRef = useRef(false)  // true only when user deliberately focuses input
 
     // Reset highlight whenever the visible list changes
     useEffect(() => { setActiveIndex(-1) }, [suggestions, recentSearches, isInputFocused])
 
     // What list is visible right now?
-    // ✅ History shows when focused + query is EMPTY (not just no suggestions)
-    const showSuggestions = suggestions.length > 0 && searchQuery.trim().length > 0
+    const showSuggestions = suggestions.length > 0 && searchQuery.trim().length > 0 && isInputFocused
     const showRecent = isInputFocused && searchQuery.trim() === "" && recentSearches.length > 0
     const activeList = showSuggestions ? suggestions : showRecent ? recentSearches : []
 
@@ -76,8 +76,9 @@ function Home() {
     useEffect(() => {
         function handlePopState(e) {
             const state = e.state
+            setSuggestions([])
+            setIsInputFocused(false)
             if (!state) {
-                // Landed on bare URL — show popular page 1
                 loadPopularMovies(1)
                 setSearchQuery("")
                 setLastSearchTerm("")
@@ -182,6 +183,7 @@ function Home() {
         await performSearch(searchQuery, 1)
         setSuggestions([])
         setIsInputFocused(false)
+        userFocusedRef.current = false
         inputRef.current?.blur()
     }
 
@@ -193,6 +195,7 @@ function Home() {
             if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
                 setSuggestions([])
                 setIsInputFocused(false)
+                userFocusedRef.current = false
             }
         }
         document.addEventListener('mousedown', handleOutsideClick)
@@ -240,10 +243,15 @@ function Home() {
     }
 
     function onFocusInput(e) {
+        if (!userFocusedRef.current) return  // ignore browser auto-focus on refresh
         setIsInputFocused(true)
         // Move cursor to end of existing text
         const len = e.target.value.length
         e.target.setSelectionRange(len, len)
+    }
+
+    function onMouseDownInput() {
+        userFocusedRef.current = true  // user deliberately clicked the input
     }
     // Delay hiding so clicks on dropdown items register first
     function onBlurInput() { setTimeout(() => setIsInputFocused(false), 150) }
@@ -289,6 +297,7 @@ function Home() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onFocus={onFocusInput}
+                        onMouseDown={onMouseDownInput}
                         onKeyDown={handleKeyDown}
                         autoComplete="off"
                         aria-autocomplete="list"
