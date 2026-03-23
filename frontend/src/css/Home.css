@@ -32,7 +32,7 @@
   display: block;
   cursor: text;           /* ✅ full area shows text cursor */
   line-height: 1.5;
-  padding-right: 3rem !important;
+  padding-right: 1rem !important;
 }
 
 .search-input:focus {
@@ -59,7 +59,7 @@
 /* ── Clear button ────────────────────────────────────────────────── */
 .clear-btn {
   position: absolute;
-  right: 8px;
+  right: 4px;
   top: 50%;
   transform: translateY(-50%);  /* ✅ reliably centered, no dead zones */
   height: 32px;
