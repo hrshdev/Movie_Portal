@@ -6,7 +6,7 @@ import '../css/Home.css'
 
 function Genres() {
   const [genres, setGenres] = useState([])
-  const [selected, setSelected] = useState(null)
+  const [selected, setSelected] = useState([])
   const [movies, setMovies] = useState([])
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
@@ -24,10 +24,14 @@ function Genres() {
     loadGenres()
   }, [])
 
-  async function loadByGenre(genreId, page = 1) {
+  async function loadByGenre(genreIds, page = 1) {
+    if (!genreIds || genreIds.length === 0) {
+        setMovies([])
+        return
+    }
     setLoading(true)
     try {
-      const data = await discoverMoviesByGenre(genreId, page)
+      const data = await discoverMoviesByGenre(genreIds, page)
       setMovies(data.results || [])
       setTotalPages(data.total_pages || 1)
       setCurrentPage(page)
@@ -39,12 +43,18 @@ function Genres() {
   }
 
   function onSelectGenre(g) {
-    setSelected(g.id)
-    loadByGenre(g.id, 1)
+    let newSelected
+    if (selected.includes(g.id)) {
+      newSelected = selected.filter(id => id !== g.id)
+    } else {
+      newSelected = [...selected, g.id]
+    }
+    setSelected(newSelected)
+    loadByGenre(newSelected, 1)
   }
 
   async function changePage(page) {
-    if (!selected) return
+    if (selected.length === 0) return
     if (page < 1 || page > totalPages) return
     await loadByGenre(selected, page)
   }
@@ -53,12 +63,12 @@ function Genres() {
     <div className="genres-page">
       <div className="genres-header">
         <h2>Browse by Genre</h2>
-        <p>Select a genre to see popular movies in that genre.</p>
+        <p>Select one or more genres to filter movies.</p>
       </div>
 
       <div className="genres-list">
         {genres.map(g => (
-          <button key={g.id} className={`genre-chip ${selected === g.id ? 'active' : ''}`} onClick={() => onSelectGenre(g)}>
+          <button key={g.id} className={`genre-chip ${selected.includes(g.id) ? 'active' : ''}`} onClick={() => onSelectGenre(g)}>
             {g.name}
           </button>
         ))}
@@ -72,7 +82,7 @@ function Genres() {
             {movies.map(m => <MovieCard movie={m} key={m.id} />)}
           </div>
 
-          {totalPages > 1 && (
+          {totalPages > 1 && selected.length > 0 && (
             <div className="pagination">
               <button onClick={() => changePage(currentPage - 1)} disabled={currentPage === 1}>Prev</button>
               {(() => {

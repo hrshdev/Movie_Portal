@@ -2,6 +2,7 @@ import '../css/MovieCard.css'
 import { useMovieContext } from '../contexts/MovieContext';
 import { useState } from 'react';
 import { getMovieDetails } from '../services/api';
+import { getMovieWatchProviders } from '../services/api';
 
 function MovieCard({ movie }) {
     const { addToFavorites, removeFromFavorites, isFavorite } = useMovieContext();
@@ -22,14 +23,18 @@ function MovieCard({ movie }) {
     }
 
     async function handleFlip() {
-        // if flipping to back and details not loaded, fetch details
+        // if flipping to back and details not loaded, fetch details and providers
         if (!flipped && !details) {
             try {
                 setLoadingDetails(true);
-                const data = await getMovieDetails(movie.id);
-                setDetails(data);
+                const [data, providers] = await Promise.all([
+                    getMovieDetails(movie.id),
+                    getMovieWatchProviders(movie.id)
+                ]);
+                setDetails({ ...data, providers });
             } catch (err) {
-                console.error('Failed to fetch movie details', err);
+                console.error('API Error:', err); // This will help identify failures
+                setDetails(null); // Reset state if data fails
             } finally {
                 setLoadingDetails(false);
             }
@@ -44,6 +49,37 @@ function MovieCard({ movie }) {
         const us = results.find(r => r.iso_3166_1 === 'US');
         const entry = (us || results[0])?.release_dates?.[0];
         return entry?.certification || 'N/A';
+    }
+
+    function getMainCast(detailObj) {
+        const cast = detailObj?.credits?.cast || [];
+        return cast.slice(0, 5).map(actor => actor.name).join(', ') || 'N/A';
+    }
+
+    function getLanguages(detailObj) {
+        const langs = detailObj?.spoken_languages || [];
+        return langs.map(l => l.english_name || l.name).join(', ') || 'N/A';
+    }
+
+    const DEFAULT_REGIONS = ['IN', 'LK'];
+
+function getOTTProviders(detailObj) {
+        const providerMap = new Map();
+        DEFAULT_REGIONS.forEach(region => {
+            const regionProviders = detailObj?.providers?.results?.[region];
+            if (!regionProviders) return;
+            const combined = [
+                ...(regionProviders.flatrate || []),
+                ...(regionProviders.rent || []),
+                ...(regionProviders.buy || [])
+            ];
+            combined.forEach(p => {
+                if (!providerMap.has(p.provider_id)) {
+                    providerMap.set(p.provider_id, p.provider_name);
+                }
+            });
+        });
+        return providerMap.size > 0 ? Array.from(providerMap.values()).join(', ') : 'N/A';
     }
 
     return (
@@ -84,6 +120,9 @@ function MovieCard({ movie }) {
                             <h3>{movie.title}</h3>
                             <p className="overview">{details?.overview || movie.overview || 'No overview available.'}</p>
                             <p><strong>Genres:</strong> {details?.genres?.map(g => g.name).join(', ') || 'N/A'}</p>
+                            <p><strong>Cast:</strong> {getMainCast(details || movie)}</p>
+                            <p><strong>Languages:</strong> {getLanguages(details || movie)}</p>
+                            <p><strong>OTT (IN, LK):</strong> {getOTTProviders(details || movie)}</p>
                             <p><strong>Release:</strong> {details?.release_date || movie.release_date || 'N/A'}</p>
                             <p><strong>User Rating:</strong> {details?.vote_average ?? movie.vote_average ?? 'N/A'}</p>
                             <p><strong>Certificate:</strong> {getCertification(details || movie)}</p>

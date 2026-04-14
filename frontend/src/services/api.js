@@ -14,8 +14,14 @@ export const getPopularMovies = async (page = 1) => {
 }
 
 export const getMovieDetails = async (movieId) => {
-    // append release_dates to include certification info
-    const response = await fetch(`${BASE_URL}/movie/${movieId}?api_key=${API_KEY}&append_to_response=release_dates`)
+    // append credits to include cast info, release_dates to include certification info
+    const response = await fetch(`${BASE_URL}/movie/${movieId}?api_key=${API_KEY}&append_to_response=credits,release_dates`)
+    const data = await response.json()
+    return data
+}
+
+export const getMovieWatchProviders = async (movieId) => {
+    const response = await fetch(`${BASE_URL}/movie/${movieId}/watch/providers?api_key=${API_KEY}`)
     const data = await response.json()
     return data
 }
@@ -26,8 +32,9 @@ export const getGenres = async () => {
     return data.genres || []
 }
 
-export const discoverMoviesByGenre = async (genreId, page = 1) => {
-    const response = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&sort_by=popularity.desc&page=${page}`)
+export const discoverMoviesByGenre = async (genreIds, page = 1) => {
+    const ids = Array.isArray(genreIds) ? genreIds.join(',') : genreIds;
+    const response = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${ids}&sort_by=popularity.desc&page=${page}`)
     const data = await response.json()
     return data
 }
