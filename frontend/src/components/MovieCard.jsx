@@ -117,15 +117,17 @@ function getOTTProviders(detailObj) {
                         <div className="back-loading">Loading details...</div>
                     ) : (
                         <div className="back-content">
-                            <h3>{movie.title}</h3>
-                            <p className="overview">{details?.overview || movie.overview || 'No overview available.'}</p>
-                            <p><strong>Genres:</strong> {details?.genres?.map(g => g.name).join(', ') || 'N/A'}</p>
-                            <p><strong>Cast:</strong> {getMainCast(details || movie)}</p>
-                            <p><strong>Languages:</strong> {getLanguages(details || movie)}</p>
-                            <p><strong>OTT (IN, LK):</strong> {getOTTProviders(details || movie)}</p>
-                            <p><strong>Release:</strong> {details?.release_date || movie.release_date || 'N/A'}</p>
-                            <p><strong>User Rating:</strong> {details?.vote_average ?? movie.vote_average ?? 'N/A'}</p>
-                            <p><strong>Certificate:</strong> {getCertification(details || movie)}</p>
+                            <div className="details-wrapper">
+                                <h3>{movie.title}</h3>
+                                <p className="overview">{details?.overview || movie.overview || 'No overview available.'}</p>
+                                <p><strong>Genres:</strong> {details?.genres?.map(g => g.name).join(', ') || 'N/A'}</p>
+                                <p><strong>Cast:</strong> {getMainCast(details || movie)}</p>
+                                <p><strong>Languages:</strong> {getLanguages(details || movie)}</p>
+                                <p><strong>OTT (IN, LK):</strong> {getOTTProviders(details || movie)}</p>
+                                <p><strong>Release:</strong> {details?.release_date || movie.release_date || 'N/A'}</p>
+                                <p><strong>User Rating:</strong> {details?.vote_average ?? movie.vote_average ?? 'N/A'}</p>
+                                <p><strong>Certificate:</strong> {getCertification(details || movie)}</p>
+                            </div>
                             <button className="flip-back-btn" onClick={handleFlip}>↩ Flip Back</button>
                         </div>
                     )}
