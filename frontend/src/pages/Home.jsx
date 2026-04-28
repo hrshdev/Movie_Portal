@@ -144,6 +144,7 @@ function Home() {
         function handleReset() {
             loadPopularMovies(1)
             setSearchQuery("")
+            setLastSearchTerm("")
         }
         window.addEventListener('resetHome', handleReset)
         return () => window.removeEventListener('resetHome', handleReset)

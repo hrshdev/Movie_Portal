@@ -241,7 +241,7 @@
 }
 
 .flip-back-btn {
-  align-self: flex-start;
+  width: 100%;
   padding: 0.5rem 1rem;
   font-size: 0.9rem;
   background-color: #ff4757;
